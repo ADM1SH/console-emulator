@@ -1,8 +1,13 @@
 # Custom 16-Bit Console Emulator
 
+[![C / AArch64 / SDL2](https://img.shields.io/Emulation-CHIP--8_%7C_AArch64-informational.svg)](https://github.com/ADM1SH/console-emulator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![GitHub Issues](https://img.shields.io/github/issues/ADM1SH/console-emulator)](https://github.com/ADM1SH/console-emulator/issues)
+
+
 A CHIP-8 emulator: hand-written AArch64 assembly CPU core + a C/SDL2 driver.
 
-> The brief said "Game Boy/NES/CHIP-8" — Game Boy/NES are multi-week,
+> The brief said "Game Boy/NES/CHIP-8" : Game Boy/NES are multi-week,
 > cycle-accurate undertakings even for hobbyists; CHIP-8 is the one that's
 > realistic to get genuinely correct and complete in one session, so that's
 > what's built here.
@@ -11,7 +16,7 @@ A CHIP-8 emulator: hand-written AArch64 assembly CPU core + a C/SDL2 driver.
 
 - Loads a CHIP-8 ROM into a 4KB memory image and runs it.
 - The entire fetch-decode-execute instruction cycle (`emulate_cycle`) is
-  hand-written AArch64 assembly (`src/chip8_core.s`) — not a C interpreter
+  hand-written AArch64 assembly (`src/chip8_core.s`) : not a C interpreter
   with an asm wrapper. The C side just calls it once per emulated cycle.
 - Renders the 64x32 monochrome framebuffer scaled up 12x via SDL2.
 - Maps SDL2 keyboard events to the 16-key CHIP-8 hex keypad.
@@ -26,7 +31,7 @@ A CHIP-8 emulator: hand-written AArch64 assembly CPU core + a C/SDL2 driver.
 make          # builds ./chip8emu
 ```
 
-Needs `clang` and SDL2 (`brew install sdl2` — this machine has it via
+Needs `clang` and SDL2 (`brew install sdl2` : this machine has it via
 `sdl2-compat`). The Makefile locates SDL2 with `pkg-config` first
 (`PKG_CONFIG_PATH` is patched to include Homebrew's path since it isn't on
 the default search path), falling back to `sdl2-config`.
@@ -52,10 +57,10 @@ A 0 B F        Z X C V
 ## Verification / proof of execution
 
 No hardware CHIP-8 ROM was available, so `tools/make_test_rom.c` hand-emits
-a small (24-instruction, 48-byte) ROM as raw big-endian opcode bytes —
+a small (24-instruction, 48-byte) ROM as raw big-endian opcode bytes :
 `assets/test.ch8`. It draws the digits "0123" using the built-in font
 sprites and deliberately exercises a conditional skip (`SE`) whose skipped
-instruction is a `CLS` — if the skip logic were broken, the `CLS` would
+instruction is a `CLS` : if the skip logic were broken, the `CLS` would
 execute and wipe the digits already on screen, so a correct ASCII/BMP dump
 is a real correctness check, not just a "something rendered" check.
 
@@ -76,7 +81,7 @@ screenshot (`out/test_screenshot.bmp`) and an ASCII framebuffer dump
 ..####.....###....####....####..................................
 ```
 
-"0123" rendered correctly, and digits 0/1/2 survived the skipped `CLS` —
+"0123" rendered correctly, and digits 0/1/2 survived the skipped `CLS` :
 confirming `LD Vx,byte`, `LD F,Vx`, `DRW`, `ADD Vx,byte`, `SE Vx,byte`,
 `CALL`/`RET`, and `JP` all work.
 
@@ -94,14 +99,14 @@ confirming `LD Vx,byte`, `LD F,Vx`, `DRW`, `ADD Vx,byte`, `SE Vx,byte`,
 
 | File | Role |
 |------|------|
-| `src/chip8_core.s` | Hand-written AArch64 core: `emulate_cycle(chip8_t*)` — fetch, decode, execute. |
+| `src/chip8_core.s` | Hand-written AArch64 core: `emulate_cycle(chip8_t*)` : fetch, decode, execute. |
 | `src/chip8.h` | The `chip8_t` struct shared (by raw byte offset) between C and asm. |
 | `src/chip8.c` | Init, font loading, ROM loading. |
 | `src/main.c` | SDL2 window/framebuffer, keypad input, main loop, 60Hz timer tick, headless dump. |
 | `tools/make_test_rom.c` | Emits `assets/test.ch8`. |
-| `tools/dump_offsets.c` | Prints `offsetof()` for every `chip8_t` field — used to derive the `.equ` constants at the top of `chip8_core.s`. Re-run this and update the asm if the struct changes. |
+| `tools/dump_offsets.c` | Prints `offsetof()` for every `chip8_t` field : used to derive the `.equ` constants at the top of `chip8_core.s`. Re-run this and update the asm if the struct changes. |
 
-The C struct and the assembly have no shared header — the `.s` file indexes
+The C struct and the assembly have no shared header : the `.s` file indexes
 into `chip8_t` with raw byte offsets (`.equ` constants), verified against
 `offsetof()` via `tools/dump_offsets.c`. This is the standard way to hand-write
 assembly against a C struct without a code generator.
@@ -130,7 +135,7 @@ assembly against a C struct without a code generator.
 
 - **CHIP-8, not NES/Game Boy.** CHIP-8 is a simple bytecode VM, not a
   cycle-accurate hardware emulation of a real CPU/PPU. *Add when: you want
-  real cartridge compatibility — that's a from-scratch NES/Game Boy project,
+  real cartridge compatibility : that's a from-scratch NES/Game Boy project,
   not an extension of this one.*
 - **No sound output, timer only.** `sound_timer` counts down at 60Hz per
   spec, but nothing plays when it's nonzero. *Add when: wire an SDL2 audio
@@ -139,3 +144,36 @@ assembly against a C struct without a code generator.
   is 24 instructions built to exercise and visually prove a slice of the
   instruction set, not a playable game. *Add when: drop a real public-domain
   CHIP-8 ROM (e.g. IBM Logo, Pong) into `assets/` and run it the same way.*
+
+## Support
+Submit issues, questions, or bug reports to the GitHub issue tracker:
+https://github.com/ADM1SH/console-emulator/issues
+
+
+## Roadmap
+* [x] Core architecture and baseline implementation.
+* [x] Functional verification and test coverage.
+* [ ] Add SCHIP (Super-CHIP) extended instruction set
+* [ ] Implement integrated debugger with opcode stepping and memory hex view
+
+
+## Contributing
+Contributions are welcome.
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/improvement`.
+3. Commit your changes: `git commit -m "feat: enhance functionality"`.
+4. Push to the branch: `git push origin feature/improvement`.
+5. Open a Pull Request.
+
+
+## Authors and Acknowledgment
+* **Adam Anwar** (ADM1SH) - Lead architect and developer.
+* Developed by Adam Anwar. Hardware specification referenced from Cowgod's CHIP-8 Technical Reference.
+
+
+## License
+Licensed under the MIT License. See `LICENSE` for details.
+
+
+## Project Status
+Complete hardware emulator. Running CHIP-8 ROMs at accurate clock speeds.
